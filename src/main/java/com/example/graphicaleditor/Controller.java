@@ -188,6 +188,7 @@ public class Controller {
         oval.setOnAction(event -> setDrawingMode(DrawingMode.OVAL, oval.isSelected()));
         pouring.setOnAction(event -> setDrawingMode(DrawingMode.POURING, pouring.isSelected()));
         pipette.setOnAction(event -> setDrawingMode(DrawingMode.PIPETTE, pipette.isSelected()));
+        moreFigure.setOnAction(event -> setDrawingMode(DrawingMode.MORE, moreFigure.isSelected()));
 
         clear.setOnAction(event -> canvasClear());
     }
