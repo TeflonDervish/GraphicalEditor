@@ -15,6 +15,8 @@ import java.util.Stack;
 public class Controller {
 
     @FXML
+    private Label coordianates;
+    @FXML
     private Button backward;
     @FXML
     private ToggleButton brush;
@@ -57,7 +59,7 @@ public class Controller {
     private Stack<CanvasAction> undoStack;
     private Stack<CanvasAction> redoStack;
     private enum DrawingMode{
-        FREE_DRAW, LINE, RECTANGLE;
+        FREE_DRAW, LINE, RECTANGLE, OVAL, MORE, PIPETTE, POURING, ERASER;
     }
     private DrawingMode currentMode = DrawingMode.FREE_DRAW;
     private GraphicsContext gc;
@@ -159,7 +161,6 @@ public class Controller {
         icon_clear.setFitWidth(40);
         clear.setGraphic(icon_clear);
     }
-
     private void setOnAction(){
         width.textProperty().addListener((observable, oldValue, newValue) -> resizeCanvas(newValue));
         height.textProperty().addListener((observable, oldValue, newValue) -> resizeCanvas(newValue));
@@ -171,14 +172,25 @@ public class Controller {
 
         canvas.setOnMousePressed(e -> startDrawing(e.getX(), e.getY()));
         canvas.setOnMouseDragged(e -> continueDrawing(e.getX(), e.getY()));
-        canvas.setOnMouseReleased(e -> stopDrawing());
+        canvas.setOnMouseReleased(e -> stopDrawing(e.getX(), e.getY()));
+
+        canvas.setOnMouseMoved(e -> {
+            int mouseX = (int) e.getX();
+            int mouseY = (int) e.getY();
+
+            coordianates.setText("Координаты: x=" + mouseX + ", y=" + mouseY);
+        });
 
         brush.setOnAction(event -> setDrawingMode(DrawingMode.FREE_DRAW, brush.isSelected()));
-        line.setOnAction(event -> setDrawingMode(DrawingMode.LINE, brush.isSelected()));
+        line.setOnAction(event -> setDrawingMode(DrawingMode.LINE, line.isSelected()));
+        eraser.setOnAction(event -> setDrawingMode(DrawingMode.ERASER, eraser.isSelected()));
+        rectangle.setOnAction(event -> setDrawingMode(DrawingMode.RECTANGLE, rectangle.isSelected()));
+        oval.setOnAction(event -> setDrawingMode(DrawingMode.OVAL, oval.isSelected()));
+        pouring.setOnAction(event -> setDrawingMode(DrawingMode.POURING, pouring.isSelected()));
+        pipette.setOnAction(event -> setDrawingMode(DrawingMode.PIPETTE, pipette.isSelected()));
 
         clear.setOnAction(event -> canvasClear());
     }
-
     private void setDrawingMode(DrawingMode mode, boolean selected) {
         if (selected) {
             currentMode = mode;
@@ -186,7 +198,6 @@ public class Controller {
             currentMode = null;
         }
     }
-
     private void startDrawing(double x, double y) {
         if (currentMode != null) {
             startX = x;
@@ -204,34 +215,122 @@ public class Controller {
                     gc.lineTo(x, y);
                     gc.stroke();
                     break;
-            }
-        }
-    }
-
-    private void continueDrawing(double x, double y) {
-        if (currentMode != null) {
-            switch (currentMode) {
-                case FREE_DRAW:
+                case LINE, RECTANGLE, OVAL:
+                    startX = x;
+                    startY = y;
+                    break;
+                case ERASER:
+                    gc.setStroke(Color.WHITE);
+                    gc.beginPath();
                     gc.lineTo(x, y);
                     gc.stroke();
+                    break;
+                case PIPETTE:
+                    Color pixelColor = getPixelColor(x, y);
+                    colorPicker.setValue(pixelColor);
+                    brush.setSelected(true);
+                    setDrawingMode(DrawingMode.FREE_DRAW, brush.isSelected());
+                    break;
+                case POURING:
+                    Color targetColor = getPixelColor(x, y);
+                    floodFill(x, y, targetColor);
+                    break;
+                case MORE:
                     break;
             }
         }
     }
-
-    private void stopDrawing() {
+    private void continueDrawing(double x, double y) {
+        if (currentMode != null) {
+            CanvasAction action;
+            switch (currentMode) {
+                case FREE_DRAW, ERASER:
+                    gc.lineTo(x, y);
+                    gc.stroke();
+                    break;
+                case LINE:
+                    action = undoStack.pop();
+                    gc.drawImage(action.getImage(), 0, 0);
+                    gc.strokeLine(startX, startY, x, y);
+                    undoStack.push(action);
+                    break;
+                case RECTANGLE:
+                    action = undoStack.pop();
+                    gc.drawImage(action.getImage(), 0, 0);
+                    if (x > startX)
+                        if (y > startY) gc.strokeRect(startX, startY, x - startX, y - startY);
+                        else gc.strokeRect(startX, y, x - startX, startY - y);
+                    else
+                    if (y > startY) gc.strokeRect(x, startY, startX - x, y - startY);
+                    else gc.strokeRect(x, y, startX - x, startY - y);
+                    undoStack.push(action);
+                    break;
+                case OVAL:
+                    action = undoStack.pop();
+                    gc.drawImage(action.getImage(), 0, 0);
+                    if (x > startX)
+                        if (y > startY) gc.strokeOval(startX, startY, x - startX, y - startY);
+                        else gc.strokeOval(startX, y, x - startX, startY - y);
+                    else
+                    if (y > startY) gc.strokeOval(x, startY, startX - x, y - startY);
+                    else gc.strokeOval(x, y, startX - x, startY - y);
+                    undoStack.push(action);
+                    break;
+            }
+        }
+    }
+    private void stopDrawing(double x, double y) {
         if (currentMode != null){
+            switch (currentMode) {
+                case LINE:
+                    gc.strokeLine(startX, startY, x, y);
+                    break;
+                case RECTANGLE:
+                    if (x > startX)
+                        if (y > startY) gc.strokeRect(startX, startY, x - startX, y - startY);
+                        else gc.strokeRect(startX, y, x - startX, startY - y);
+                    else
+                        if (y > startY) gc.strokeRect(x, startY, startX - x, y - startY);
+                        else gc.strokeRect(x, y, startX - x, startY - y);
+                    break;
+                case OVAL:
+                    if (x > startX)
+                        if (y > startY) gc.strokeOval(startX, startY, x - startX, y - startY);
+                        else gc.strokeOval(startX, y, x - startX, startY - y);
+                    else
+                        if (y > startY) gc.strokeOval(x, startY, startX - x, y - startY);
+                        else gc.strokeOval(x, y, startX - x, startY - y);
+                    break;
+            }
             saveState();
             justDraw = true;
         }
     }
-
-    private void saveState() {
-        undoStack.push(new CanvasAction(gc.getCanvas().snapshot(null, null)));
-        System.out.println(undoStack);
-        redoStack.clear();
+    private Color getPixelColor(double x, double y) {
+        return canvas.snapshot(null, null).getPixelReader().getColor((int) x, (int) y);
     }
 
+    private void floodFill(double x, double y, Color targetColor) {
+        if (x < 0 || x >= canvas.getWidth() || y < 0 || y >= canvas.getHeight()) {
+            return;
+        }
+
+        if (!getPixelColor(x, y).equals(targetColor)) {
+            return;
+        }
+
+        gc.setFill(colorPicker.getValue());
+        gc.fillRect(x, y, 1, 1);
+
+        floodFill(x + 1, y, targetColor);
+        floodFill(x - 1, y, targetColor);
+        floodFill(x, y + 1, targetColor);
+        floodFill(x, y - 1, targetColor);
+    }
+    private void saveState() {
+        undoStack.push(new CanvasAction(gc.getCanvas().snapshot(null, null)));
+        redoStack.clear();
+    }
     private void undo() {
         if (undoStack.size() > 1) {
             CanvasAction lastAction1 = undoStack.pop();
@@ -239,7 +338,6 @@ public class Controller {
             redoStack.push(lastAction1);
             gc.drawImage(lastAction2.getImage(), 0, 0);
             undoStack.push(lastAction2);
-            System.out.println(undoStack);
         }
     }
     private void redo() {
@@ -252,7 +350,6 @@ public class Controller {
             gc.drawImage(lastRedoAction.getImage(), 0, 0);
         }
     }
-
     private void resizeCanvas(String newValue){
         if (!newValue.matches("\\d*")) {
             width.setText(newValue.replaceAll("[^\\d]", ""));
@@ -265,13 +362,12 @@ public class Controller {
             System.out.println("Invalid input");
         }
     }
-
     private void scaleCanvas(double scaleValue) {
         canvasPane.setScaleX(scaleValue / 100);
         canvasPane.setScaleY(scaleValue / 100);
     }
-
     private void canvasClear(){
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        saveState();
     }
 }

@@ -251,7 +251,7 @@
    <bottom>
       <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #000000; -fx-border-radius: 3;" BorderPane.alignment="BOTTOM_LEFT">
          <children>
-            <Label layoutX="14.0" layoutY="12.0" text="Координаты" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="12.0" />
+            <Label fx:id="coordianates" layoutX="14.0" layoutY="12.0" text="Координаты" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="12.0" />
             <Slider fx:id="scaleSlider" layoutX="1107.0" layoutY="15.0" max="200.0" min="50.0" value="100.0" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="30.0" />
             <Label layoutX="1049.0" layoutY="13.0" text="Масштаб:" AnchorPane.rightAnchor="180.0" />
          </children>
@@ -267,7 +267,7 @@
          </BorderPane.margin></ScrollPane>
    </right>
    <center>
-      <ScrollPane fx:id="scrollPane" style="-fx-border-color: white;" BorderPane.alignment="CENTER">
+      <ScrollPane fx:id="scrollPane" style="-fx-border-color: white;" BorderPane.alignment="TOP_LEFT">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin>
@@ -277,7 +277,7 @@
          <content>
             <AnchorPane fx:id="canvasPane" style="-fx-border-color: #000000;">
                <children>
-                  <Canvas fx:id="canvas" height="500.0" layoutX="2.0" layoutY="2.0" width="1000.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0" />
+                  <Canvas fx:id="canvas" height="500.0" layoutX="3.0" layoutY="3.0" width="1000.0" />
                </children>
             </AnchorPane>
          </content>
