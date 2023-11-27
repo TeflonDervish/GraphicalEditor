@@ -453,8 +453,8 @@ public class Controller {
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
             Image image = new Image(file.toURI().toString());
-            canvas.setHeight(image.getHeight());
-            canvas.setWidth(image.getWidth());
+            width.setText(String.valueOf((int) image.getWidth()));
+            height.setText(String.valueOf((int) image.getHeight()));
             gc.drawImage(image, 0, 0);
         }
     }
