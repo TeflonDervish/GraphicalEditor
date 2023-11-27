@@ -6,16 +6,20 @@ import javafx.scene.control.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 
 public class Controller {
-
     @FXML
-    private Label coordianates;
+    private MenuItem saveFileAs;
     @FXML
     private Button backward;
     @FXML
@@ -29,7 +33,13 @@ public class Controller {
     @FXML
     private ColorPicker colorPicker;
     @FXML
+    private Label coordianates;
+    @FXML
+    private MenuItem createFile;
+    @FXML
     private ToggleButton eraser;
+    @FXML
+    private MenuItem exit;
     @FXML
     private Button forward;
     @FXML
@@ -39,6 +49,8 @@ public class Controller {
     @FXML
     private ToggleButton moreFigure;
     @FXML
+    private MenuItem openFile;
+    @FXML
     private ToggleButton oval;
     @FXML
     private ToggleButton pipette;
@@ -47,14 +59,23 @@ public class Controller {
     @FXML
     private ToggleButton rectangle;
     @FXML
+    private Menu redo;
+    @FXML
+    private Button resetScale;
+    @FXML
+    private MenuItem saveFile;
+    @FXML
     private Slider scaleSlider;
     @FXML
     private ScrollPane scrollPane;
     @FXML
     private TextField thickness;
     @FXML
+    private Menu undo;
+    @FXML
     private TextField width;
-
+    FileChooser fileChooser;
+    private String savePath;
     boolean justDraw = false;
     private Stack<CanvasAction> undoStack;
     private Stack<CanvasAction> redoStack;
@@ -64,9 +85,15 @@ public class Controller {
     private DrawingMode currentMode = DrawingMode.FREE_DRAW;
     private GraphicsContext gc;
     private ToggleGroup toggleGroup;
-    private double startX, startY, endX, endY;
+    private double startX, startY;
     @FXML
     void initialize(){
+        fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        savePath = "";
+
         undoStack = new Stack<>();
         redoStack = new Stack<>();
 
@@ -83,7 +110,6 @@ public class Controller {
 
         saveState();
     }
-
     private void addToogleGroup(){
         toggleGroup = new ToggleGroup();
         brush.setToggleGroup(toggleGroup);
@@ -160,6 +186,12 @@ public class Controller {
         icon_clear.setFitHeight(40);
         icon_clear.setFitWidth(40);
         clear.setGraphic(icon_clear);
+
+        icon = new Image("C:\\Users\\slava\\Desktop\\Projects\\Desktop\\GraphicalEditor\\src\\main\\resources\\icons\\resetScale.png");
+        ImageView icon_reset = new ImageView(icon);
+        icon_reset.setFitHeight(20);
+        icon_reset.setFitWidth(20);
+        resetScale.setGraphic(icon_reset);
     }
     private void setOnAction(){
         width.textProperty().addListener((observable, oldValue, newValue) -> resizeCanvas(newValue));
@@ -169,6 +201,8 @@ public class Controller {
 
         backward.setOnAction(e -> undo());
         forward.setOnAction(e -> redo());
+        undo.setOnAction(e -> undo());
+        redo.setOnAction(e -> redo());
 
         canvas.setOnMousePressed(e -> startDrawing(e.getX(), e.getY()));
         canvas.setOnMouseDragged(e -> continueDrawing(e.getX(), e.getY()));
@@ -177,9 +211,13 @@ public class Controller {
         canvas.setOnMouseMoved(e -> {
             int mouseX = (int) e.getX();
             int mouseY = (int) e.getY();
-
             coordianates.setText("Координаты: x=" + mouseX + ", y=" + mouseY);
         });
+
+        createFile.setOnAction(e -> createFile());
+        saveFile.setOnAction(e -> save());
+        openFile.setOnAction(e -> open());
+        saveFileAs.setOnAction(e -> saveAs());
 
         brush.setOnAction(event -> setDrawingMode(DrawingMode.FREE_DRAW, brush.isSelected()));
         line.setOnAction(event -> setDrawingMode(DrawingMode.LINE, line.isSelected()));
@@ -189,6 +227,7 @@ public class Controller {
         pouring.setOnAction(event -> setDrawingMode(DrawingMode.POURING, pouring.isSelected()));
         pipette.setOnAction(event -> setDrawingMode(DrawingMode.PIPETTE, pipette.isSelected()));
         moreFigure.setOnAction(event -> setDrawingMode(DrawingMode.MORE, moreFigure.isSelected()));
+        resetScale.setOnAction(e -> {scaleSlider.setValue(100);});
 
         clear.setOnAction(event -> canvasClear());
     }
@@ -310,7 +349,6 @@ public class Controller {
     private Color getPixelColor(double x, double y) {
         return canvas.snapshot(null, null).getPixelReader().getColor((int) x, (int) y);
     }
-
     private void floodFill(double x, double y, Color targetColor) {
         if (x < 0 || x >= canvas.getWidth() || y < 0 || y >= canvas.getHeight()) {
             return;
@@ -371,4 +409,72 @@ public class Controller {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         saveState();
     }
+    private void createFile(){
+        width.setText("1000");
+        height.setText("500");
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        undoStack.clear();
+        redoStack.clear();
+        saveState();
+    }
+    private void save(){
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+        canvas.snapshot(null, writableImage);
+//        if (savePath == "") {
+//            fileChooser.setTitle("Сохранить");
+//            File file = fileChooser.showSaveDialog(stage);
+//            System.out.println(file.getAbsoluteFile());
+//
+//            if (file != null) {
+//                try {
+//                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+//                    savePath = file.getAbsolutePath();
+//                } catch (IOException ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        }else {
+//            try {
+//                File file = new File(savePath);
+//                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+//                savePath = file.getAbsolutePath();
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//            }
+//        }
+    }
+    private void open(){
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+        canvas.snapshot(null, writableImage);
+
+        fileChooser.setTitle("Открыть");
+        File file = fileChooser.showOpenDialog(stage);
+        if (file != null) {
+            Image image = new Image(file.toURI().toString());
+            canvas.setHeight(image.getHeight());
+            canvas.setWidth(image.getWidth());
+            gc.drawImage(image, 0, 0);
+        }
+    }
+    private void saveAs(){
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
+        canvas.snapshot(null, writableImage);
+
+        fileChooser.setTitle("Сохранить как...");
+        File file = fileChooser.showSaveDialog(stage);
+        System.out.println(file.getAbsoluteFile());
+
+//        if (file != null) {
+//            try {
+//                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
+//                savePath = file.getAbsolutePath();
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//            }
+//        }
+    }
+
 }
