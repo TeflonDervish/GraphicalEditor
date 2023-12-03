@@ -262,13 +262,13 @@
       </AnchorPane>
    </bottom>
    <right>
-      <ScrollPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black; -fx-border-radius: 3;" BorderPane.alignment="CENTER_RIGHT">
+      <ScrollPane prefHeight="200.0" prefWidth="300.0" style="-fx-border-color: black; -fx-border-radius: 3;" BorderPane.alignment="CENTER_RIGHT">
          <BorderPane.margin>
             <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
          </BorderPane.margin></ScrollPane>
    </right>
    <center>
-      <ScrollPane fx:id="scrollPane" style="-fx-border-color: white;" BorderPane.alignment="TOP_LEFT">
+      <ScrollPane fx:id="scrollPane" style="-fx-border-color: white;">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin>
@@ -278,8 +278,11 @@
          <content>
             <AnchorPane fx:id="canvasPane" style="-fx-border-color: #000000;">
                <children>
-                  <Canvas fx:id="canvas" height="500.0" layoutX="3.0" layoutY="3.0" width="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Canvas fx:id="canvas" height="500.0" layoutY="1.0" width="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
             </AnchorPane>
          </content>
       </ScrollPane>

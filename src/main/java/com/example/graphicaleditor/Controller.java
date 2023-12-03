@@ -2,20 +2,21 @@ package com.example.graphicaleditor;
 
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.IOException;
 import java.util.Stack;
+
+import static java.lang.String.valueOf;
 
 public class Controller {
     @FXML
@@ -97,7 +98,7 @@ public class Controller {
         undoStack = new Stack<>();
         redoStack = new Stack<>();
 
-        width.setText("1000");
+        width.setText("900");
         height.setText("500");
 
         thickness.setText("2");
@@ -350,21 +351,32 @@ public class Controller {
         return canvas.snapshot(null, null).getPixelReader().getColor((int) x, (int) y);
     }
     private void floodFill(double x, double y, Color targetColor) {
-        if (x < 0 || x >= canvas.getWidth() || y < 0 || y >= canvas.getHeight()) {
-            return;
+        Stack<Point> stack = new Stack<>();
+        stack.push(new Point((int) x, (int) y));
+
+        PixelReader pixelReader = gc.getCanvas().snapshot(null, null).getPixelReader();
+        boolean[][] visited = new boolean[(int) canvas.getWidth()][(int) canvas.getHeight()];
+        System.out.println((int) canvas.getWidth());
+
+        Point point;
+        Color color = colorPicker.getValue();
+
+        while (!stack.isEmpty()) {
+            point = stack.pop();
+            if (point.x >= 0 && point.x < canvas.getWidth() &&
+                point.y >= 0 && point.y < canvas.getHeight() &&
+                pixelReader.getColor(point.x, point.y).equals(targetColor) &&
+                !visited[point.x][point.y]){
+
+                gc.getPixelWriter().setColor(point.x, point.y, color);
+                visited[point.x][point.y] = true;
+
+                stack.push(new Point(point.x + 1, point.y));
+                stack.push(new Point(point.x - 1, point.y));
+                stack.push(new Point(point.x, point.y + 1));
+                stack.push(new Point(point.x, point.y - 1));
+            }
         }
-
-        if (!getPixelColor(x, y).equals(targetColor)) {
-            return;
-        }
-
-        gc.setFill(colorPicker.getValue());
-        gc.fillRect(x, y, 1, 1);
-
-        floodFill(x + 1, y, targetColor);
-        floodFill(x - 1, y, targetColor);
-        floodFill(x, y + 1, targetColor);
-        floodFill(x, y - 1, targetColor);
     }
     private void saveState() {
         undoStack.push(new CanvasAction(gc.getCanvas().snapshot(null, null)));
@@ -402,6 +414,8 @@ public class Controller {
         }
     }
     private void scaleCanvas(double scaleValue) {
+        canvasPane.setTranslateX((Double.parseDouble(valueOf(width.getText())) / 2) * (scaleValue / 100 - 1));
+        canvasPane.setTranslateY((Double.parseDouble(valueOf(height.getText())) / 2) * (scaleValue / 100 - 1));
         canvasPane.setScaleX(scaleValue / 100);
         canvasPane.setScaleY(scaleValue / 100);
     }
@@ -425,7 +439,6 @@ public class Controller {
 //            fileChooser.setTitle("Сохранить");
 //            File file = fileChooser.showSaveDialog(stage);
 //            System.out.println(file.getAbsoluteFile());
-//
 //            if (file != null) {
 //                try {
 //                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
@@ -443,7 +456,7 @@ public class Controller {
 //                ex.printStackTrace();
 //            }
 //        }
-    }
+  }
     private void open(){
         Stage stage = (Stage) canvas.getScene().getWindow();
         WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
@@ -453,8 +466,8 @@ public class Controller {
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
             Image image = new Image(file.toURI().toString());
-            width.setText(String.valueOf((int) image.getWidth()));
-            height.setText(String.valueOf((int) image.getHeight()));
+            width.setText(valueOf((int) image.getWidth()));
+            height.setText(valueOf((int) image.getHeight()));
             gc.drawImage(image, 0, 0);
         }
     }
@@ -476,5 +489,12 @@ public class Controller {
 //            }
 //        }
     }
-
+    private static class Point {
+        int x, y;
+        Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
 }
+
