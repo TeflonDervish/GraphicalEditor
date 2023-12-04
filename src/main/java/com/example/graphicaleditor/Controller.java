@@ -4,6 +4,8 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
@@ -20,59 +22,146 @@ import static java.lang.String.valueOf;
 
 public class Controller {
     @FXML
-    private MenuItem saveFileAs;
+    private Slider adjustBrightness;
+
+    @FXML
+    private Slider adjustContrast;
+
+    @FXML
+    private Slider adjustHUE;
+
+    @FXML
+    private Slider adjustSaturation;
+
+    @FXML
+    private Button applyGrayscale;
+
     @FXML
     private Button backward;
+
+    @FXML
+    private Button blurApply;
+
+    @FXML
+    private Button blurCancel;
+
+    @FXML
+    private Button blurDefault;
+
+    @FXML
+    private Slider blurHeight;
+
+    @FXML
+    private Slider blurIter;
+
+    @FXML
+    private Button blurSave;
+
+    @FXML
+    private Slider blurWidth;
+
     @FXML
     private ToggleButton brush;
+
     @FXML
     private Canvas canvas;
+
     @FXML
     private AnchorPane canvasPane;
+
     @FXML
     private Button clear;
+
     @FXML
     private ColorPicker colorPicker;
+
     @FXML
     private Label coordianates;
+
     @FXML
     private MenuItem createFile;
+
     @FXML
     private ToggleButton eraser;
+
     @FXML
     private MenuItem exit;
+
     @FXML
     private Button forward;
+
+    @FXML
+    private Button grayscaleCancel;
+
+    @FXML
+    private Button grayscaleDefault;
+
+    @FXML
+    private Button grayscaleSave;
+
     @FXML
     private TextField height;
+
     @FXML
     private ToggleButton line;
+
     @FXML
     private ToggleButton moreFigure;
+
     @FXML
     private MenuItem openFile;
+
     @FXML
     private ToggleButton oval;
+
     @FXML
     private ToggleButton pipette;
+
     @FXML
     private ToggleButton pouring;
+
     @FXML
     private ToggleButton rectangle;
-    @FXML
-    private Menu redo;
+
     @FXML
     private Button resetScale;
+
     @FXML
     private MenuItem saveFile;
+
+    @FXML
+    private MenuItem saveFileAs;
+
     @FXML
     private Slider scaleSlider;
+
     @FXML
     private ScrollPane scrollPane;
+
+    @FXML
+    private Button sharpenApply;
+
+    @FXML
+    private Button sharpenCancel;
+
+    @FXML
+    private Button sharpenDefault;
+
+    @FXML
+    private Slider sharpenHeight;
+
+    @FXML
+    private Slider sharpenIter;
+
+    @FXML
+    private Button sharpenSave;
+
+    @FXML
+    private Slider sharpenWidth;
+
     @FXML
     private TextField thickness;
-    @FXML
-    private Menu undo;
+
     @FXML
     private TextField width;
     FileChooser fileChooser;
@@ -81,9 +170,13 @@ public class Controller {
     private Stack<CanvasAction> undoStack;
     private Stack<CanvasAction> redoStack;
     private enum DrawingMode{
-        FREE_DRAW, LINE, RECTANGLE, OVAL, MORE, PIPETTE, POURING, ERASER;
+        FREE_DRAW, LINE, RECTANGLE, OVAL, MORE, PIPETTE, POURING, ERASER, FILTERS;
     }
     private DrawingMode currentMode = DrawingMode.FREE_DRAW;
+    private enum Filters{
+        BLUR, SHARPEN, GRAYSCALE, DRAWING;
+    }
+    private Filters currentFilter = Filters.DRAWING;
     private GraphicsContext gc;
     private ToggleGroup toggleGroup;
     private double startX, startY;
@@ -202,8 +295,6 @@ public class Controller {
 
         backward.setOnAction(e -> undo());
         forward.setOnAction(e -> redo());
-        undo.setOnAction(e -> undo());
-        redo.setOnAction(e -> redo());
 
         canvas.setOnMousePressed(e -> startDrawing(e.getX(), e.getY()));
         canvas.setOnMouseDragged(e -> continueDrawing(e.getX(), e.getY()));
@@ -228,11 +319,29 @@ public class Controller {
         pouring.setOnAction(event -> setDrawingMode(DrawingMode.POURING, pouring.isSelected()));
         pipette.setOnAction(event -> setDrawingMode(DrawingMode.PIPETTE, pipette.isSelected()));
         moreFigure.setOnAction(event -> setDrawingMode(DrawingMode.MORE, moreFigure.isSelected()));
+
+        blurApply.setOnAction(event -> setFilterMode(Filters.BLUR));
+        applyGrayscale.setOnAction(event -> setFilterMode(Filters.GRAYSCALE));
+        sharpenApply.setOnAction(event -> setFilterMode(Filters.SHARPEN));
+
+        blurDefault.setOnAction(event -> setFilterDefault(Filters.BLUR));
+        sharpenDefault.setOnAction(event -> setFilterDefault(Filters.SHARPEN));
+        grayscaleDefault.setOnAction(event -> setFilterDefault(Filters.GRAYSCALE));
+
+        blurCancel.setOnAction(event -> setFilterCancel(Filters.BLUR));
+        sharpenCancel.setOnAction(event -> setFilterCancel(Filters.SHARPEN));
+        grayscaleCancel.setOnAction(event -> setFilterCancel(Filters.GRAYSCALE));
+
+        blurApply.setOnAction(event -> setSaveFilter());
+        sharpenSave.setOnAction(event -> setSaveFilter());
+        grayscaleSave.setOnAction(event -> setSaveFilter());
+
         resetScale.setOnAction(e -> {scaleSlider.setValue(100);});
 
         clear.setOnAction(event -> canvasClear());
     }
     private void setDrawingMode(DrawingMode mode, boolean selected) {
+        currentFilter = Filters.DRAWING;
         if (selected) {
             currentMode = mode;
         } else {
@@ -356,7 +465,6 @@ public class Controller {
 
         PixelReader pixelReader = gc.getCanvas().snapshot(null, null).getPixelReader();
         boolean[][] visited = new boolean[(int) canvas.getWidth()][(int) canvas.getHeight()];
-        System.out.println((int) canvas.getWidth());
 
         Point point;
         Color color = colorPicker.getValue();
@@ -379,7 +487,9 @@ public class Controller {
         }
     }
     private void saveState() {
-        undoStack.push(new CanvasAction(gc.getCanvas().snapshot(null, null)));
+        undoStack.push(new CanvasAction(gc.getCanvas().snapshot(null, null),
+                                        Integer.parseInt(width.getText()),
+                                        Integer.parseInt(height.getText())));
         redoStack.clear();
     }
     private void undo() {
@@ -388,17 +498,19 @@ public class Controller {
             CanvasAction lastAction2 = undoStack.pop();
             redoStack.push(lastAction1);
             gc.drawImage(lastAction2.getImage(), 0, 0);
+            width.setText(lastAction2.getWidth());
+            height.setText(lastAction2.getHeight());
             undoStack.push(lastAction2);
         }
     }
     private void redo() {
         if (!redoStack.isEmpty()) {
-            // Извлекаем последнее отмененное состояние и добавляем его в undoStack
             CanvasAction lastRedoAction = redoStack.pop();
             undoStack.push(lastRedoAction);
 
-            // Восстанавливаем состояние Canvas
             gc.drawImage(lastRedoAction.getImage(), 0, 0);
+            width.setText(lastRedoAction.getWidth());
+            height.setText(lastRedoAction.getHeight());
         }
     }
     private void resizeCanvas(String newValue){
@@ -419,12 +531,85 @@ public class Controller {
         canvasPane.setScaleX(scaleValue / 100);
         canvasPane.setScaleY(scaleValue / 100);
     }
+    private void setFilterMode(Filters filterMode){
+        currentMode = DrawingMode.FILTERS;
+        currentFilter = filterMode;
+
+        CanvasAction lastAction = undoStack.pop();
+        gc.drawImage(lastAction.getImage(), 0, 0);
+        undoStack.push(lastAction);
+
+        switch (filterMode){
+            case BLUR:
+                BoxBlur blur = new BoxBlur();
+                blur.setWidth(blurWidth.getValue());
+                blur.setHeight(blurHeight.getValue());
+                blur.setIterations((int) blurIter.getValue());
+                gc.applyEffect(blur);
+                break;
+            case SHARPEN:
+                BoxBlur sharpen = new BoxBlur();
+                sharpen.setWidth(sharpenWidth.getValue());
+                sharpen.setHeight(sharpenHeight.getValue());
+                sharpen.setIterations((int) sharpenIter.getValue());
+                gc.applyEffect(sharpen);
+                break;
+            case GRAYSCALE:
+                ColorAdjust grayscaleEffect = new ColorAdjust();
+                grayscaleEffect.setSaturation(adjustSaturation.getValue());
+                grayscaleEffect.setBrightness(adjustBrightness.getValue());
+                grayscaleEffect.setContrast(adjustContrast.getValue());
+                grayscaleEffect.setHue(adjustHUE.getValue());
+                gc.applyEffect(grayscaleEffect);
+                break;
+        }
+    }
+    private void setFilterDefault(Filters filterMode){
+
+        CanvasAction lastAction = undoStack.pop();
+        gc.drawImage(lastAction.getImage(), 0, 0);
+        undoStack.push(lastAction);
+
+        switch (filterMode){
+            case BLUR:
+                blurWidth.setValue(10);
+                blurHeight.setValue(10);
+                blurIter.setValue(5);
+                setFilterMode(filterMode);
+                break;
+            case SHARPEN:
+                sharpenIter.setValue(5);
+                sharpenWidth.setValue(-10);
+                sharpenHeight.setValue(-10);
+                setFilterMode(filterMode);
+                break;
+            case GRAYSCALE:
+                adjustBrightness.setValue(0);
+                adjustContrast.setValue(0);
+                adjustSaturation.setValue(0);
+                adjustHUE.setValue(0);
+                setFilterMode(filterMode);
+                break;
+        }
+    }
+    private void setFilterCancel(Filters filterMode){
+        if (currentFilter == filterMode){
+            CanvasAction lastAction = undoStack.pop();
+            gc.drawImage(lastAction.getImage(), 0, 0);
+            undoStack.push(lastAction);
+        }
+    }
+    private void setSaveFilter(){
+        saveState();
+        currentFilter = Filters.DRAWING;
+        currentMode = DrawingMode.FREE_DRAW;
+    }
     private void canvasClear(){
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         saveState();
     }
     private void createFile(){
-        width.setText("1000");
+        width.setText("900");
         height.setText("500");
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         undoStack.clear();
@@ -470,6 +655,8 @@ public class Controller {
             height.setText(valueOf((int) image.getHeight()));
             gc.drawImage(image, 0, 0);
         }
+
+        saveState();
     }
     private void saveAs(){
         Stage stage = (Stage) canvas.getScene().getWindow();
@@ -496,5 +683,6 @@ public class Controller {
             this.y = y;
         }
     }
+
 }
 

@@ -12,6 +12,8 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -39,26 +41,12 @@
                         <MenuItem fx:id="exit" mnemonicParsing="false" text="Выйти" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Изменить">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="Вырезать" />
-                        <MenuItem mnemonicParsing="false" text="Копировать" />
-                        <MenuItem mnemonicParsing="false" text="Вставить" />
-                  </items>
-                </Menu>
                 <Menu mnemonicParsing="false" text="Помощь">
                   <items>
                     <MenuItem mnemonicParsing="false" text="О нас" />
                         <MenuItem mnemonicParsing="false" text="Руководство" />
                   </items>
                 </Menu>
-                  <Menu disable="true" mnemonicParsing="false" text="|">
-                    <items>
-                      <MenuItem mnemonicParsing="false" text="Action 1" />
-                    </items>
-                  </Menu>
-                  <Menu fx:id="undo" mnemonicParsing="false" text="Отменить" />
-                  <Menu fx:id="redo" mnemonicParsing="false" text="Востановить" />
               </menus>
                <padding>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -261,12 +249,6 @@
          </BorderPane.margin>
       </AnchorPane>
    </bottom>
-   <right>
-      <ScrollPane prefHeight="200.0" prefWidth="300.0" style="-fx-border-color: black; -fx-border-radius: 3;" BorderPane.alignment="CENTER_RIGHT">
-         <BorderPane.margin>
-            <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
-         </BorderPane.margin></ScrollPane>
-   </right>
    <center>
       <ScrollPane fx:id="scrollPane" style="-fx-border-color: white;">
          <BorderPane.margin>
@@ -287,4 +269,73 @@
          </content>
       </ScrollPane>
    </center>
+   <right>
+      <AnchorPane style="-fx-border-color: #000000; -fx-border-radius: 3;" BorderPane.alignment="CENTER">
+         <children>
+            <TabPane prefWidth="350.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <tabs>
+                  <Tab text="Размытие">
+                     <content>
+                        <AnchorPane prefHeight="455.0" prefWidth="305.0">
+                           <children>
+                              <Slider fx:id="blurHeight" layoutX="176.0" layoutY="43.0" max="20.0" value="10.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="60.0" />
+                              <Slider fx:id="blurWidth" max="20.0" value="10.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="30.0" />
+                              <Slider fx:id="blurIter" layoutX="176.0" layoutY="82.0" max="10.0" min="1.0" value="3.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="90.0" />
+                              <Label text="Ширина области размытия" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="30.0" />
+                              <Label text="Высота области размытия" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="60.0" />
+                              <Button fx:id="blurCancel" layoutX="268.0" layoutY="112.0" mnemonicParsing="false" prefWidth="100.0" text="Отменить" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="10.0" />
+                              <Label text="Количество итераций" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="90.0" />
+                              <Button fx:id="blurDefault" layoutX="131.0" layoutY="110.0" mnemonicParsing="false" prefWidth="100.0" text="По умолчанию" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="120.0" />
+                              <Button fx:id="blurSave" layoutX="10.0" layoutY="152.0" mnemonicParsing="false" prefWidth="100.0" text="Сохранить изменения" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+                              <Button fx:id="blurApply" mnemonicParsing="false" prefWidth="100.0" text="Применить" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="10.0" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab text="Резкость">
+                     <content>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <Button fx:id="sharpenApply" mnemonicParsing="false" prefWidth="100.0" text="Применить" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="10.0" />
+                              <Slider fx:id="sharpenWidth" blockIncrement="1.0" max="0.0" min="-20.0" value="-10.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="30.0" />
+                              <Label text="Ширина области резкости" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="30.0" />
+                              <Button fx:id="sharpenCancel" layoutX="268.0" layoutY="112.0" mnemonicParsing="false" prefWidth="100.0" text="Отменить" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="10.0" />
+                              <Button fx:id="sharpenDefault" layoutX="131.0" layoutY="110.0" mnemonicParsing="false" prefWidth="100.0" text="По умолчанию" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="120.0" />
+                              <Button fx:id="sharpenSave" layoutX="40.0" layoutY="149.0" mnemonicParsing="false" prefWidth="100.0" text="Сохранить изменения" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+                              <Label layoutX="14.0" layoutY="59.0" text="Высота области резкости" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="60.0" />
+                              <Label layoutX="23.0" layoutY="84.0" text="Количество итераций" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="90.0" />
+                              <Slider fx:id="sharpenHeight" blockIncrement="1.0" layoutX="120.0" layoutY="83.0" max="0.0" min="-20.0" value="-10.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="60.0" />
+                              <Slider fx:id="sharpenIter" layoutX="10.0" layoutY="10.0" max="0.0" min="-20.0" value="-10.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="90.0" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab text="Настройка цвета">
+                     <content>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <Button fx:id="applyGrayscale" mnemonicParsing="false" prefWidth="100.0" text="Применить" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="10.0" />
+                              <Slider fx:id="adjustSaturation" blockIncrement="1.0" max="1.0" min="-1.0" prefHeight="14.0" prefWidth="200.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="30.0" />
+                              <Label text="Насыщенность" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="30.0" />
+                              <Button fx:id="grayscaleCancel" layoutX="268.0" layoutY="112.0" mnemonicParsing="false" prefWidth="100.0" text="Отменить" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="10.0" />
+                              <Button fx:id="grayscaleDefault" layoutX="131.0" layoutY="110.0" mnemonicParsing="false" prefWidth="100.0" text="По умолчанию" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="120.0" />
+                              <Button fx:id="grayscaleSave" mnemonicParsing="false" prefWidth="100.0" text="Сохранить изменения" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+                              <Label layoutX="60.0" layoutY="115.0" text="Яркость" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="60.0" />
+                              <Slider fx:id="adjustBrightness" blockIncrement="1.0" layoutX="187.0" layoutY="62.0" max="1.0" min="-1.0" prefWidth="200.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="60.0" />
+                              <Label layoutX="70.0" layoutY="125.0" text="Контраст" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="90.0" />
+                              <Slider fx:id="adjustContrast" blockIncrement="1.0" layoutX="197.0" layoutY="72.0" max="1.0" min="-1.0" prefWidth="200.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="90.0" />
+                              <Label layoutX="80.0" layoutY="135.0" text="Оттенок" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="120.0" />
+                              <Slider fx:id="adjustHUE" blockIncrement="1.0" layoutX="180.0" layoutY="122.0" max="1.0" min="-1.0" prefWidth="200.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="120.0" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
+         </BorderPane.margin>
+      </AnchorPane>
+   </right>
 </BorderPane>
