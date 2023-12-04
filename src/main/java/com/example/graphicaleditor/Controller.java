@@ -620,6 +620,7 @@ public class Controller {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         undoStack.clear();
         redoStack.clear();
+        savePath = "";
         saveState();
     }
     private void save(){
