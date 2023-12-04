@@ -15,10 +15,14 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Stack;
 
 import static java.lang.String.valueOf;
+import static javafx.scene.paint.Color.WHITE;
 
 public class Controller {
     @FXML
@@ -34,13 +38,16 @@ public class Controller {
     private Slider adjustSaturation;
 
     @FXML
-    private Button applyGrayscale;
+    private Button applyAdjust;
+
+    @FXML
+    private Button applyBlur;
+
+    @FXML
+    private Button applySharpen;
 
     @FXML
     private Button backward;
-
-    @FXML
-    private Button blurApply;
 
     @FXML
     private Button blurCancel;
@@ -139,9 +146,6 @@ public class Controller {
     private ScrollPane scrollPane;
 
     @FXML
-    private Button sharpenApply;
-
-    @FXML
     private Button sharpenCancel;
 
     @FXML
@@ -164,6 +168,7 @@ public class Controller {
 
     @FXML
     private TextField width;
+
     FileChooser fileChooser;
     private String savePath;
     boolean justDraw = false;
@@ -320,9 +325,9 @@ public class Controller {
         pipette.setOnAction(event -> setDrawingMode(DrawingMode.PIPETTE, pipette.isSelected()));
         moreFigure.setOnAction(event -> setDrawingMode(DrawingMode.MORE, moreFigure.isSelected()));
 
-        blurApply.setOnAction(event -> setFilterMode(Filters.BLUR));
-        applyGrayscale.setOnAction(event -> setFilterMode(Filters.GRAYSCALE));
-        sharpenApply.setOnAction(event -> setFilterMode(Filters.SHARPEN));
+        applyBlur.setOnAction(event -> setFilterMode(Filters.BLUR));
+        applyAdjust.setOnAction(event -> setFilterMode(Filters.GRAYSCALE));
+        applySharpen.setOnAction(event -> setFilterMode(Filters.SHARPEN));
 
         blurDefault.setOnAction(event -> setFilterDefault(Filters.BLUR));
         sharpenDefault.setOnAction(event -> setFilterDefault(Filters.SHARPEN));
@@ -332,7 +337,7 @@ public class Controller {
         sharpenCancel.setOnAction(event -> setFilterCancel(Filters.SHARPEN));
         grayscaleCancel.setOnAction(event -> setFilterCancel(Filters.GRAYSCALE));
 
-        blurApply.setOnAction(event -> setSaveFilter());
+        blurSave.setOnAction(event -> setSaveFilter());
         sharpenSave.setOnAction(event -> setSaveFilter());
         grayscaleSave.setOnAction(event -> setSaveFilter());
 
@@ -370,7 +375,7 @@ public class Controller {
                     startY = y;
                     break;
                 case ERASER:
-                    gc.setStroke(Color.WHITE);
+                    gc.setStroke(WHITE);
                     gc.beginPath();
                     gc.lineTo(x, y);
                     gc.stroke();
@@ -532,6 +537,7 @@ public class Controller {
         canvasPane.setScaleY(scaleValue / 100);
     }
     private void setFilterMode(Filters filterMode){
+        System.out.println(filterMode);
         currentMode = DrawingMode.FILTERS;
         currentFilter = filterMode;
 
@@ -574,11 +580,11 @@ public class Controller {
             case BLUR:
                 blurWidth.setValue(10);
                 blurHeight.setValue(10);
-                blurIter.setValue(5);
+                blurIter.setValue(3);
                 setFilterMode(filterMode);
                 break;
             case SHARPEN:
-                sharpenIter.setValue(5);
+                sharpenIter.setValue(3);
                 sharpenWidth.setValue(-10);
                 sharpenHeight.setValue(-10);
                 setFilterMode(filterMode);
@@ -618,29 +624,46 @@ public class Controller {
     }
     private void save(){
         Stage stage = (Stage) canvas.getScene().getWindow();
-        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
-        canvas.snapshot(null, writableImage);
-//        if (savePath == "") {
-//            fileChooser.setTitle("Сохранить");
-//            File file = fileChooser.showSaveDialog(stage);
-//            System.out.println(file.getAbsoluteFile());
-//            if (file != null) {
-//                try {
-//                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
-//                    savePath = file.getAbsolutePath();
-//                } catch (IOException ex) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        }else {
-//            try {
-//                File file = new File(savePath);
-//                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
-//                savePath = file.getAbsolutePath();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
+
+        WritableImage writableImage = canvas.snapshot(null, null);
+        PixelReader pixelReader = writableImage.getPixelReader();
+
+        int width = (int) writableImage.getWidth();
+        int height = (int) writableImage.getHeight();
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                javafx.scene.paint.Color color = pixelReader.getColor(x, y);
+                int rgb = ((int) (color.getRed() * 255) << 16) |
+                        ((int) (color.getGreen() * 255) << 8) |
+                        ((int) (color.getBlue() * 255) << 0) |
+                        ((int) (color.getOpacity() * 255) << 24);
+                bufferedImage.setRGB(x, y, rgb);
+            }
+        }
+
+        if (savePath.isEmpty()) {
+            fileChooser.setTitle("Сохранить");
+            File file = fileChooser.showSaveDialog(stage);
+
+            if (file != null) {
+                try {
+                    ImageIO.write(bufferedImage, "png", file);
+                    savePath = file.getAbsolutePath();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }else {
+            try {
+                File file = new File(savePath);
+                ImageIO.write(bufferedImage, "png", file);
+                savePath = file.getAbsolutePath();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
   }
     private void open(){
         Stage stage = (Stage) canvas.getScene().getWindow();
@@ -660,21 +683,35 @@ public class Controller {
     }
     private void saveAs(){
         Stage stage = (Stage) canvas.getScene().getWindow();
-        WritableImage writableImage = new WritableImage((int) canvas.getWidth(), (int) canvas.getHeight());
-        canvas.snapshot(null, writableImage);
+        WritableImage writableImage = canvas.snapshot(null, null);
+        PixelReader pixelReader = writableImage.getPixelReader();
+
+        int width = (int) writableImage.getWidth();
+        int height = (int) writableImage.getHeight();
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                javafx.scene.paint.Color color = pixelReader.getColor(x, y);
+                int rgb = ((int) (color.getRed() * 255) << 16) |
+                        ((int) (color.getGreen() * 255) << 8) |
+                        ((int) (color.getBlue() * 255) << 0) |
+                        ((int) (color.getOpacity() * 255) << 24);
+                bufferedImage.setRGB(x, y, rgb);
+            }
+        }
 
         fileChooser.setTitle("Сохранить как...");
         File file = fileChooser.showSaveDialog(stage);
-        System.out.println(file.getAbsoluteFile());
 
-//        if (file != null) {
-//            try {
-//                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", file);
-//                savePath = file.getAbsolutePath();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
+        if (file != null) {
+            try {
+                ImageIO.write(bufferedImage, "png", file);
+                savePath = file.getAbsolutePath();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
     private static class Point {
         int x, y;
