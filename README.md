@@ -10,14 +10,14 @@ With numerous tools, effects and customization options, you're in complete contr
 
 ![Графический редактор](Readme/Drawing.png)
 
-**Можете работать с фильтрами**
+**You can work with filters**
 
 ![Графический редактор](Readme/Фильтры.png)
 
-**Можете сделать размытие**
+**You can do a blur**
 
 ![Графический редактор](Readme/Размытие.png)
 
-**Можете поработать с цветами**
+**You can work with the colors**
 
 ![Графический редактор](Readme/WorkAfjustColor.png)
