@@ -6,4 +6,4 @@ With numerous tools, effects and customization options, you're in complete contr
 
 You can create your own image
 
-![Графический редактор]{MainPage.png}
+![Графический редактор]{Readme/Drawing.png}
