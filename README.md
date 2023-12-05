@@ -1,5 +1,9 @@
-# Добро пожаловать в мир творчества с нашим графическим редактором!
+# Welcome to the world of creativity with our graphic editor!
 
-Раскрой свой талант, воплоти фантазии и создавай удивительные произведения искусства с легкостью. Наш редактор - это не просто инструмент, это волшебная палитра, где каждый щелчок мыши превращает идеи в живописные шедевры.
+Unleash your talent, fulfill your fantasies and create amazing works of art with ease. Our editor is not just a tool, it's a magic palette where every click of the mouse transforms ideas into picturesque masterpieces.
 
-С многочисленными инструментами, эффектами и возможностями настройки, ты в полном контроле над своим творчеством. Открой двери в мир цвета, формы и выражения с нашим графическим редактором - местом, где рождаются визуальные чудеса!
+With numerous tools, effects and customization options, you're in complete control of your creativity. Open the doors to a world of color, form and expression with our graphic editor - the place where visual wonders are born!
+
+You can create your own image
+
+![Графический редактор]{MainPage.png}
