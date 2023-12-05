@@ -6,18 +6,18 @@ With numerous tools, effects and customization options, you're in complete contr
 
 ![Графический редактор](Readme/MainPage.png)
 
-#You can create your own image
+# You can create your own image
 
 ![Графический редактор](Readme/Drawing.png)
 
-#You can work with filters
+# You can work with filters
 
 ![Графический редактор](Readme/Фильтры.png)
 
-#You can do a blur
+# You can do a blur
 
 ![Графический редактор](Readme/Размытие.png)
 
-#You can work with the colors
+# You can work with the colors
 
 ![Графический редактор](Readme/WorkAfjustColor.png)
