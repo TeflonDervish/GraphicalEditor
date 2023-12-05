@@ -4,8 +4,6 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.effect.BoxBlur;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
@@ -347,6 +345,11 @@ public class Controller {
     }
     private void setDrawingMode(DrawingMode mode, boolean selected) {
         currentFilter = Filters.DRAWING;
+
+        CanvasAction lastAction = undoStack.pop();
+        gc.drawImage(lastAction.getImage(), 0, 0);
+        undoStack.push(lastAction);
+
         if (selected) {
             currentMode = mode;
         } else {
@@ -537,7 +540,6 @@ public class Controller {
         canvasPane.setScaleY(scaleValue / 100);
     }
     private void setFilterMode(Filters filterMode){
-        System.out.println(filterMode);
         currentMode = DrawingMode.FILTERS;
         currentFilter = filterMode;
 
@@ -547,26 +549,23 @@ public class Controller {
 
         switch (filterMode){
             case BLUR:
-                BoxBlur blur = new BoxBlur();
-                blur.setWidth(blurWidth.getValue());
-                blur.setHeight(blurHeight.getValue());
-                blur.setIterations((int) blurIter.getValue());
-                gc.applyEffect(blur);
+                com.example.graphicaleditor.Filters.Blur(gc,
+                                                        blurWidth.getValue(),
+                                                        blurHeight.getValue(),
+                                                        (int) blurIter.getValue());
                 break;
             case SHARPEN:
-                BoxBlur sharpen = new BoxBlur();
-                sharpen.setWidth(sharpenWidth.getValue());
-                sharpen.setHeight(sharpenHeight.getValue());
-                sharpen.setIterations((int) sharpenIter.getValue());
-                gc.applyEffect(sharpen);
+                com.example.graphicaleditor.Filters.Sharpen(gc,
+                                                            sharpenWidth.getValue(),
+                                                            sharpenHeight.getValue(),
+                                                            (int) sharpenIter.getValue());
                 break;
             case GRAYSCALE:
-                ColorAdjust grayscaleEffect = new ColorAdjust();
-                grayscaleEffect.setSaturation(adjustSaturation.getValue());
-                grayscaleEffect.setBrightness(adjustBrightness.getValue());
-                grayscaleEffect.setContrast(adjustContrast.getValue());
-                grayscaleEffect.setHue(adjustHUE.getValue());
-                gc.applyEffect(grayscaleEffect);
+                com.example.graphicaleditor.Filters.Adjust(gc,
+                                                            adjustSaturation.getValue(),
+                                                            adjustBrightness.getValue(),
+                                                            adjustContrast.getValue(),
+                                                            adjustHUE.getValue());
                 break;
         }
     }
@@ -585,8 +584,8 @@ public class Controller {
                 break;
             case SHARPEN:
                 sharpenIter.setValue(3);
-                sharpenWidth.setValue(-10);
-                sharpenHeight.setValue(-10);
+                sharpenWidth.setValue(0.5);
+                sharpenHeight.setValue(0.5);
                 setFilterMode(filterMode);
                 break;
             case GRAYSCALE:
@@ -712,13 +711,6 @@ public class Controller {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-    private static class Point {
-        int x, y;
-        Point(int x, int y) {
-            this.x = x;
-            this.y = y;
         }
     }
 
