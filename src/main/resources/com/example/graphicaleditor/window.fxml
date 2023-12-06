@@ -258,7 +258,7 @@
             <Insets left="10.0" top="10.0" />
          </padding>
          <content>
-            <AnchorPane fx:id="canvasPane" style="-fx-border-color: #000000;">
+            <AnchorPane fx:id="canvasPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="900.0" style="-fx-border-color: #000000;">
                <children>
                   <Canvas fx:id="canvas" height="500.0" layoutY="1.0" width="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>

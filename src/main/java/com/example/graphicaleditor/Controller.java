@@ -167,6 +167,8 @@ public class Controller {
     @FXML
     private TextField width;
 
+    private int widthCanvas, heightCanvas;
+    private double scale = 1;
     FileChooser fileChooser;
     private String savePath;
     boolean justDraw = false;
@@ -185,6 +187,9 @@ public class Controller {
     private double startX, startY;
     @FXML
     void initialize(){
+        widthCanvas = 900;
+        heightCanvas = 500;
+
         fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png");
         fileChooser.getExtensionFilters().add(extFilter);
@@ -291,8 +296,8 @@ public class Controller {
         resetScale.setGraphic(icon_reset);
     }
     private void setOnAction(){
-        width.textProperty().addListener((observable, oldValue, newValue) -> resizeCanvas(newValue));
-        height.textProperty().addListener((observable, oldValue, newValue) -> resizeCanvas(newValue));
+        width.textProperty().addListener((observable, oldValue, newValue) -> resizeWidthCanvas(newValue));
+        height.textProperty().addListener((observable, oldValue, newValue) -> resizeHeightCanvas(newValue));
 
         scaleSlider.valueProperty().addListener((observable, oldValue, newValue) -> scaleCanvas(newValue.doubleValue()));
 
@@ -521,23 +526,42 @@ public class Controller {
             height.setText(lastRedoAction.getHeight());
         }
     }
-    private void resizeCanvas(String newValue){
+    private void resizeWidthCanvas(String newValue){
         if (!newValue.matches("\\d*")) {
             width.setText(newValue.replaceAll("[^\\d]", ""));
+        }
+        try {
+            widthCanvas = Integer.parseInt(width.getText());
+            System.out.println((int) (widthCanvas * scale));
+            canvasPane.setPrefWidth((int) (widthCanvas * scale));
+            canvas.setWidth((int) (widthCanvas * scale));
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input");
+        }
+    }
+    private void resizeHeightCanvas(String newValue){
+        if (!newValue.matches("\\d*")) {
             height.setText(newValue.replaceAll("[^\\d]", ""));
         }
         try {
-            canvas.setWidth(Integer.parseInt(width.getText()));
-            canvas.setHeight(Integer.parseInt(height.getText()));
+            heightCanvas = Integer.parseInt(width.getText());
+            System.out.println((int) (heightCanvas * scale));
+            canvasPane.setPrefHeight((int) (heightCanvas * scale));
+            canvas.setHeight((int) (heightCanvas * scale));
         } catch (NumberFormatException e) {
             System.out.println("Invalid input");
         }
     }
     private void scaleCanvas(double scaleValue) {
-        canvasPane.setTranslateX((Double.parseDouble(valueOf(width.getText())) / 2) * (scaleValue / 100 - 1));
-        canvasPane.setTranslateY((Double.parseDouble(valueOf(height.getText())) / 2) * (scaleValue / 100 - 1));
-        canvasPane.setScaleX(scaleValue / 100);
-        canvasPane.setScaleY(scaleValue / 100);
+        scale = scaleValue / 100;
+
+        canvas.setScaleX(scale);
+        canvas.setScaleY(scale);
+        canvas.setTranslateX((widthCanvas / 2) * (scale - 1));
+        canvas.setTranslateY((heightCanvas / 2) * (scale - 1));
+
+        canvasPane.setPrefWidth((int) (widthCanvas * scale));
+        canvasPane.setPrefHeight((int) (heightCanvas * scale));
     }
     private void setFilterMode(Filters filterMode){
         currentMode = DrawingMode.FILTERS;
