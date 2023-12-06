@@ -414,29 +414,19 @@ public class Controller {
                 case LINE:
                     action = undoStack.pop();
                     gc.drawImage(action.getImage(), 0, 0);
-                    gc.strokeLine(startX, startY, x, y);
+                    GeometricFigure.drawLine(gc, startX, startY, x, y);
                     undoStack.push(action);
                     break;
                 case RECTANGLE:
                     action = undoStack.pop();
                     gc.drawImage(action.getImage(), 0, 0);
-                    if (x > startX)
-                        if (y > startY) gc.strokeRect(startX, startY, x - startX, y - startY);
-                        else gc.strokeRect(startX, y, x - startX, startY - y);
-                    else
-                    if (y > startY) gc.strokeRect(x, startY, startX - x, y - startY);
-                    else gc.strokeRect(x, y, startX - x, startY - y);
+                    GeometricFigure.drawRectangle(gc, startX, startY, x, y);
                     undoStack.push(action);
                     break;
                 case OVAL:
                     action = undoStack.pop();
                     gc.drawImage(action.getImage(), 0, 0);
-                    if (x > startX)
-                        if (y > startY) gc.strokeOval(startX, startY, x - startX, y - startY);
-                        else gc.strokeOval(startX, y, x - startX, startY - y);
-                    else
-                    if (y > startY) gc.strokeOval(x, startY, startX - x, y - startY);
-                    else gc.strokeOval(x, y, startX - x, startY - y);
+                    GeometricFigure.drawOval(gc, startX, startY, x, y);
                     undoStack.push(action);
                     break;
             }
@@ -446,23 +436,13 @@ public class Controller {
         if (currentMode != null){
             switch (currentMode) {
                 case LINE:
-                    gc.strokeLine(startX, startY, x, y);
+                    GeometricFigure.drawLine(gc, startX, startY, x, y);
                     break;
                 case RECTANGLE:
-                    if (x > startX)
-                        if (y > startY) gc.strokeRect(startX, startY, x - startX, y - startY);
-                        else gc.strokeRect(startX, y, x - startX, startY - y);
-                    else
-                        if (y > startY) gc.strokeRect(x, startY, startX - x, y - startY);
-                        else gc.strokeRect(x, y, startX - x, startY - y);
+                    GeometricFigure.drawRectangle(gc, startX, startY, x, y);
                     break;
                 case OVAL:
-                    if (x > startX)
-                        if (y > startY) gc.strokeOval(startX, startY, x - startX, y - startY);
-                        else gc.strokeOval(startX, y, x - startX, startY - y);
-                    else
-                        if (y > startY) gc.strokeOval(x, startY, startX - x, y - startY);
-                        else gc.strokeOval(x, y, startX - x, startY - y);
+                    GeometricFigure.drawOval(gc, startX, startY, x, y);
                     break;
             }
             saveState();
